@@ -1,0 +1,48 @@
+package cmd
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/spf13/cobra"
+	"github.com/stenstromen/kubectl-pulse/internal/pulse"
+)
+
+var (
+	minutes int
+)
+
+var rootCmd = &cobra.Command{
+	Use:   "kubectl-pulse",
+	Short: "Get a quick health pulse of your Kubernetes cluster",
+	Long: `A kubectl plugin that prints cluster health with one line (emojis, top offenders, restarts in last N mins)
+
+Example usage:
+  kubectl pulse          # Show cluster health with default 15-minute window
+  kubectl pulse -m 30    # Check restarts in last 30 minutes`,
+	Run: func(cmd *cobra.Command, args []string) {
+		service, err := pulse.NewService()
+		if err != nil {
+			fmt.Printf("🚨 Error initializing pulse service: %v\n", err)
+			os.Exit(1)
+		}
+
+		result, err := service.GetClusterPulse(minutes)
+		if err != nil {
+			fmt.Printf("🚨 Error getting cluster pulse: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println(result)
+	},
+}
+
+func init() {
+	rootCmd.PersistentFlags().IntVarP(&minutes, "minutes", "m", 15, "Time window in minutes to check for restarts")
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+}
