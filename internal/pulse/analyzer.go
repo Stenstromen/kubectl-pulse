@@ -12,25 +12,26 @@ func NewAnalyzer() *Analyzer {
 }
 
 func (a *Analyzer) AnalyzeClusterHealth(pods []PodStatus, timeWindowMinutes int, podAmount int) ClusterHealth {
-	recentRestarts := a.countRecentRestarts(pods, time.Duration(timeWindowMinutes)*time.Minute)
+	recentRestarts, recentRestartPods := a.countRecentRestarts(pods, time.Duration(timeWindowMinutes)*time.Minute)
 	topOffenders := a.getTopOffenders(pods, podAmount)
 
 	return ClusterHealth{
-		RecentRestarts: recentRestarts,
-		TopOffenders:   topOffenders,
-		TimeWindow:     timeWindowMinutes,
+		RecentRestarts:    recentRestarts,
+		RecentRestartPods: recentRestartPods,
+		TopOffenders:      topOffenders,
+		TimeWindow:        timeWindowMinutes,
 	}
 }
 
-func (a *Analyzer) countRecentRestarts(pods []PodStatus, window time.Duration) int {
-	count := 0
+func (a *Analyzer) countRecentRestarts(pods []PodStatus, window time.Duration) (int, []PodStatus) {
+	var recentRestartPods []PodStatus
 	now := time.Now()
 	for _, pod := range pods {
 		if !pod.LastRestart.IsZero() && now.Sub(pod.LastRestart) <= window {
-			count++
+			recentRestartPods = append(recentRestartPods, pod)
 		}
 	}
-	return count
+	return len(recentRestartPods), recentRestartPods
 }
 
 func (a *Analyzer) getTopOffenders(pods []PodStatus, limit int) []PodStatus {

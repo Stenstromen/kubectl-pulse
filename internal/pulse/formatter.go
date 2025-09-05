@@ -28,15 +28,28 @@ func (f *Formatter) FormatClusterHealth(health ClusterHealth) string {
 	if health.RecentRestarts == 0 {
 		restartEmoji = "✅"
 	}
-	output += fmt.Sprintf("%s Recent restarts (%dm): %d\n", restartEmoji, health.TimeWindow, health.RecentRestarts)
+	output += fmt.Sprintf("%s Recent restarts (%dm): %d", restartEmoji, health.TimeWindow, health.RecentRestarts)
+
+	if len(health.RecentRestartPods) > 0 {
+		output += " ("
+		for i, pod := range health.RecentRestartPods {
+			if i > 0 {
+				output += ", "
+			}
+			podName := pod.Name
+			if len(podName) > 15 {
+				podName = podName[:12] + "..."
+			}
+			output += fmt.Sprintf("%s/%s", pod.Namespace, podName)
+		}
+		output += ")"
+	}
+	output += "\n"
 
 	if len(health.TopOffenders) > 0 && health.TopOffenders[0].Restarts > 0 {
 		output += "\n🔥 Top problematic pods:\n"
-		for i, offender := range health.TopOffenders {
+		for _, offender := range health.TopOffenders {
 			if offender.Restarts == 0 {
-				break
-			}
-			if i >= 3 {
 				break
 			}
 

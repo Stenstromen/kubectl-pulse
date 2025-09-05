@@ -11,7 +11,8 @@ type PodStatus struct {
 }
 
 type ClusterHealth struct {
-	RecentRestarts int
-	TopOffenders   []PodStatus
-	TimeWindow     int
+	RecentRestarts    int
+	RecentRestartPods []PodStatus
+	TopOffenders      []PodStatus
+	TimeWindow        int
 }
