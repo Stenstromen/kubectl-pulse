@@ -11,9 +11,9 @@ func NewAnalyzer() *Analyzer {
 	return &Analyzer{}
 }
 
-func (a *Analyzer) AnalyzeClusterHealth(pods []PodStatus, timeWindowMinutes int) ClusterHealth {
+func (a *Analyzer) AnalyzeClusterHealth(pods []PodStatus, timeWindowMinutes int, podAmount int) ClusterHealth {
 	recentRestarts := a.countRecentRestarts(pods, time.Duration(timeWindowMinutes)*time.Minute)
-	topOffenders := a.getTopOffenders(pods, 3)
+	topOffenders := a.getTopOffenders(pods, podAmount)
 
 	return ClusterHealth{
 		RecentRestarts: recentRestarts,

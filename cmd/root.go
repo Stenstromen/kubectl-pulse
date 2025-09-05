@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	minutes int
+	minutes   int
+	podAmount int
 )
 
 var rootCmd = &cobra.Command{
@@ -19,7 +20,8 @@ var rootCmd = &cobra.Command{
 
 Example usage:
   kubectl pulse          # Show cluster health with default 15-minute window
-  kubectl pulse -m 30    # Check restarts in last 30 minutes`,
+  kubectl pulse -m 30    # Check restarts in last 30 minutes
+  kubectl pulse -m 30 -p 10 # Check restarts in last 30 minutes and show top 10 pods`,
 	Run: func(cmd *cobra.Command, args []string) {
 		service, err := pulse.NewService()
 		if err != nil {
@@ -27,7 +29,7 @@ Example usage:
 			os.Exit(1)
 		}
 
-		result, err := service.GetClusterPulse(minutes)
+		result, err := service.GetClusterPulse(minutes, podAmount)
 		if err != nil {
 			fmt.Printf("🚨 Error getting cluster pulse: %v\n", err)
 			os.Exit(1)
@@ -39,6 +41,7 @@ Example usage:
 
 func init() {
 	rootCmd.PersistentFlags().IntVarP(&minutes, "minutes", "m", 15, "Time window in minutes to check for restarts")
+	rootCmd.PersistentFlags().IntVarP(&podAmount, "pod-amount", "p", 3, "Amount of pods to check for restarts")
 }
 
 func Execute() {

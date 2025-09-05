@@ -19,14 +19,13 @@ func NewService() (*Service, error) {
 	}, nil
 }
 
-func (s *Service) GetClusterPulse(timeWindowMinutes int) (string, error) {
-	// Get pod statuses
+func (s *Service) GetClusterPulse(timeWindowMinutes int, podAmount int) (string, error) {
 	pods, err := s.client.GetPodStatuses()
 	if err != nil {
 		return "", err
 	}
 
-	health := s.analyzer.AnalyzeClusterHealth(pods, timeWindowMinutes)
+	health := s.analyzer.AnalyzeClusterHealth(pods, timeWindowMinutes, podAmount)
 
 	return s.formatter.FormatClusterHealth(health), nil
 }
