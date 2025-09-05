@@ -1,0 +1,33 @@
+project_name: kubectl-pulse
+builds:
+  - env: [CGO_ENABLED=0]
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    binary: kubectl-pulse
+    ldflags:
+      - -s -w -extldflags '-static'
+    flags:
+      - -trimpath
+      - -a
+    tags:
+      - netgo
+archives:
+  - name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+brews:
+  - name: kubectl-pulse
+    repository:
+      owner: stenstromen
+      name: homebrew-tap
+    commit_author:
+      name: stenstromen
+    homepage: https://github.com/Stenstromen/kubectl-pulse
+    description: A kubectl plugin that prints cluster health with one line (emojis, top offenders, restarts in last N mins)
+    directory: Formula
