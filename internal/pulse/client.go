@@ -30,7 +30,11 @@ func NewClient() (*Client, error) {
 }
 
 func (c *Client) GetPodStatuses() ([]PodStatus, error) {
-	pods, err := c.clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
+	return c.GetPodStatusesInNamespace("")
+}
+
+func (c *Client) GetPodStatusesInNamespace(namespace string) ([]PodStatus, error) {
+	pods, err := c.clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

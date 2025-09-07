@@ -33,13 +33,21 @@ func NewServiceWithClientset(clientset kubernetes.Interface) (*Service, error) {
 	}, nil
 }
 
-func (s *Service) GetClusterPulse(timeWindowMinutes int, podAmount int) (string, error) {
-	pods, err := s.client.GetPodStatuses()
+func (s *Service) GetClusterPulse(timeWindowMinutes int, podAmount int, namespace string) (string, error) {
+	var pods []PodStatus
+	var err error
+
+	if namespace != "" {
+		pods, err = s.client.GetPodStatusesInNamespace(namespace)
+	} else {
+		pods, err = s.client.GetPodStatuses()
+	}
+
 	if err != nil {
 		return "", err
 	}
 
-	health := s.analyzer.AnalyzeClusterHealth(pods, timeWindowMinutes, podAmount)
+	health := s.analyzer.AnalyzeClusterHealth(pods, timeWindowMinutes, podAmount, namespace)
 
 	return s.formatter.FormatClusterHealth(health), nil
 }
