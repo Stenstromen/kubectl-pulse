@@ -1,8 +1,3 @@
-
-### 1. **Pod Status Distribution**
-- Count of pods in different states (Running, Pending, Failed, Succeeded, Unknown)
-- Percentage breakdown to quickly spot if there's a systemic issue
-
 ### 2. **Resource Health Indicators**
 - **CPU/Memory pressure** - pods that are consistently hitting resource limits
 - **Storage issues** - pods with persistent volume problems
