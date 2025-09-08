@@ -14,12 +14,14 @@ func NewAnalyzer() *Analyzer {
 func (a *Analyzer) AnalyzeClusterHealth(pods []PodStatus, timeWindowMinutes int, podAmount int, namespace string) ClusterHealth {
 	recentRestarts, recentRestartPods := a.countRecentRestarts(pods, time.Duration(timeWindowMinutes)*time.Minute, namespace)
 	topOffenders := a.getTopOffenders(pods, podAmount, namespace)
+	statusDistribution := a.calculatePodStatusDistribution(pods, namespace)
 
 	return ClusterHealth{
-		RecentRestarts:    recentRestarts,
-		RecentRestartPods: recentRestartPods,
-		TopOffenders:      topOffenders,
-		TimeWindow:        timeWindowMinutes,
+		RecentRestarts:        recentRestarts,
+		RecentRestartPods:     recentRestartPods,
+		TopOffenders:          topOffenders,
+		PodStatusDistribution: statusDistribution,
+		TimeWindow:            timeWindowMinutes,
 	}
 }
 
@@ -53,4 +55,30 @@ func (a *Analyzer) getTopOffenders(pods []PodStatus, limit int, namespace string
 		return filteredPods[:limit]
 	}
 	return filteredPods
+}
+
+func (a *Analyzer) calculatePodStatusDistribution(pods []PodStatus, namespace string) PodStatusDistribution {
+	distribution := PodStatusDistribution{}
+
+	for _, pod := range pods {
+		if namespace != "" && pod.Namespace != namespace {
+			continue
+		}
+
+		distribution.Total++
+		switch pod.Status {
+		case "Running":
+			distribution.Running++
+		case "Pending":
+			distribution.Pending++
+		case "Failed":
+			distribution.Failed++
+		case "Succeeded":
+			distribution.Succeeded++
+		case "Unknown":
+			distribution.Unknown++
+		}
+	}
+
+	return distribution
 }

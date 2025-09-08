@@ -46,6 +46,8 @@ func (f *Formatter) FormatClusterHealth(health ClusterHealth) string {
 	}
 	output += "\n"
 
+	output += f.formatPodStatusDistribution(health.PodStatusDistribution)
+
 	if len(health.TopOffenders) > 0 && health.TopOffenders[0].Restarts > 0 {
 		output += "\n🔥 Top problematic pods:\n"
 		for _, offender := range health.TopOffenders {
@@ -72,6 +74,40 @@ func (f *Formatter) FormatClusterHealth(health ClusterHealth) string {
 	}
 
 	output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+	return output
+}
+
+func (f *Formatter) formatPodStatusDistribution(distribution PodStatusDistribution) string {
+	if distribution.Total == 0 {
+		return "📊 Pod Status: No pods found\n\n"
+	}
+
+	output := "📊 Pod Status Distribution:\n"
+
+	// Define statuses with their emojis and order
+	statuses := []struct {
+		name  string
+		count int
+		emoji string
+	}{
+		{"Running", distribution.Running, "🟢"},
+		{"Pending", distribution.Pending, "🟡"},
+		{"Failed", distribution.Failed, "🔴"},
+		{"Succeeded", distribution.Succeeded, "✅"},
+		{"Unknown", distribution.Unknown, "❓"},
+	}
+
+	for _, status := range statuses {
+		if status.count > 0 {
+			percentage := distribution.GetPercentage(status.name)
+			output += fmt.Sprintf("   %s %s: %d (%.1f%%)\n",
+				status.emoji, status.name, status.count, percentage)
+		}
+	}
+
+	// Add total count
+	output += fmt.Sprintf("   📈 Total: %d pods\n\n", distribution.Total)
 
 	return output
 }
